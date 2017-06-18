@@ -100,6 +100,7 @@ static unsigned int     n_buffers       = 0;
 // global settings
 static unsigned int width = 640;
 static unsigned int height = 480;
+static unsigned int sleepTime = 0;
 static unsigned int fps = 30;
 static int continuous = 0;
 static unsigned char jpegQuality = 70;
@@ -841,12 +842,13 @@ static void usage(FILE* fp, int argc, char** argv)
 		"-H | --height        Set image height\n"
 		"-I | --interval      Set frame interval (fps) (-1 to skip)\n"
 		"-c | --continuous    Do continous capture, stop with SIGINT.\n"
+		"-s | --sleep time    Sleep milliseconds before capture.\n"
 		"-v | --version       Print version\n"
 		"",
 		argv[0]);
 	}
 
-static const char short_options [] = "d:ho:q:mruW:H:I:vc";
+static const char short_options [] = "d:ho:q:mruW:H:I:vcs:";
 
 static const struct option
 long_options [] = {
@@ -862,6 +864,7 @@ long_options [] = {
 	{ "interval",   required_argument,      NULL,           'I' },
 	{ "version",	no_argument,		NULL,		'v' },
 	{ "continuous",	no_argument,		NULL,		'c' },
+	{ "sleep",	required_argument,	NULL,		's' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -947,6 +950,10 @@ int main(int argc, char **argv)
 				InstallSIGINTHandler();
 				break;
 				
+			case 's':
+				// set sleep time in milliseconds before capture.
+				sleepTime = atoi(optarg);
+				break;
 
 			case 'v':
 				printf("Version: %s\n", VERSION);
@@ -980,6 +987,10 @@ int main(int argc, char **argv)
 
 	// start capturing
 	captureStart();
+
+	if (sleepTime>0) {
+		usleep((__useconds_t) (sleepTime * 1000));
+	}
 
 	// process frames
 	mainLoop();
